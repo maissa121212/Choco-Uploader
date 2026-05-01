@@ -474,7 +474,7 @@ input::placeholder { color: var(--gray-400); }
 
   <div class="tip">
     <div class="tip-icon">💡</div>
-    <div>Имена файлов в Google Drive должны совпадать с названиями блюд на любом языке — <b>русском, казахском или английском</b>. Фото автоматически обрезается до размера <b>940×560 пикселей</b>.</div>
+    <div>Имена файлов в Google Drive должны совпадать с названиями блюд на любом языке — <b>русском, казахском или английском</b>. Фото загружается в оригинальном размере без обрезки.</div>
   </div>
 
 </div>
@@ -587,23 +587,7 @@ function findMatch(filename) {
 }
 
 async function cropImage(blob) {
-  return new Promise(res => {
-    const img = new Image();
-    const url = URL.createObjectURL(blob);
-    img.onload = () => {
-      const cv = document.createElement('canvas');
-      cv.width = 940; cv.height = 560;
-      const ctx = cv.getContext('2d');
-      const sr = img.width / img.height, dr = 940 / 560;
-      let sx, sy, sw, sh;
-      if (sr > dr) { sh = img.height; sw = sh * dr; sx = (img.width - sw) / 2; sy = 0; }
-      else { sw = img.width; sh = sw / dr; sx = 0; sy = (img.height - sh) / 2; }
-      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, 940, 560);
-      URL.revokeObjectURL(url);
-      cv.toBlob(b => res(b), 'image/jpeg', 0.92);
-    };
-    img.src = url;
-  });
+  return blob;
 }
 
 async function uploadToRahmet(fileId, product) {
