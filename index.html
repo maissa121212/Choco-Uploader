@@ -545,13 +545,13 @@ async function getDriveFiles(folderId) {
 
 async function loadProducts(menuId) {
   const h = { Authorization: tok, Accept: 'application/json', 'x-language': 'ru', 'x-fingerprint': 'e1dc91ff-9f41-4807-9d27-72a6857a3212', 'x-idempotency-key': crypto.randomUUID() };
-  const cr = await fetch(`https://api-proxy.choco.kz/menu/v2/categories?menu_id=${menuId}`, { headers: h });
+  const cr = await fetch(`/api/proxy/menu/v2/categories?menu_id=${menuId}`, { headers: h });
   const cd = await cr.json();
   const cats = cd.data?.categories || [];
   if (!cats.length) throw new Error('Категории не загрузились — токен устарел, получи новый');
   prods = [];
   for (const cat of cats) {
-    const pr = await fetch(`https://api-proxy.choco.kz/menu/v2/products?category_id=${cat.id}`, { headers: h });
+    const pr = await fetch(`/api/proxy/menu/v2/products?category_id=${cat.id}`, { headers: h });
     const pd = await pr.json();
     (pd.data || []).forEach(p => prods.push({ ...p, cat: cat.name, category_id: cat.id }));
   }
@@ -615,7 +615,7 @@ async function uploadToRahmet(fileId, product) {
 
   const fd = new FormData();
   fd.append('image', cropped, 'photo.jpg');
-  const r1 = await fetch('https://api-proxy.choco.kz/menu/v2/products/upload-image', {
+  const r1 = await fetch('/api/proxy/menu/v2/products/upload-image', {
     method: 'POST', headers: { Authorization: tok }, body: fd
   });
   if (!r1.ok) return false;
@@ -638,7 +638,7 @@ async function uploadToRahmet(fileId, product) {
     image: imageUrl,
     additive_groups: []
   };
-  const r2 = await fetch(`https://api-proxy.choco.kz/menu/v2/products/${product.id}`, {
+  const r2 = await fetch(`/api/proxy/menu/v2/products/${product.id}`, {
     method: 'PUT',
     headers: { Authorization: tok, 'Content-Type': 'application/json' },
     body: JSON.stringify(body)
