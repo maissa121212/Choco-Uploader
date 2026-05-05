@@ -594,7 +594,7 @@ function needsTranslation(prod, lang) {
 
 async function translateBatch(texts, targetLang) {
   const langNames = { kk: 'казахский', en: 'английский', zh: 'китайский', ka: 'грузинский' };
-  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+  const resp = await fetch('/api/claude', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -954,7 +954,7 @@ async function analyzePhotoWithAI(blob) {
   });
   const names = prods.map(p => p.name).join('\n');
   try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    const resp = await fetch('/api/claude', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -981,9 +981,12 @@ async function analyzePhotoWithAI(blob) {
 async function uploadToRahmet(fileId, product, prefetchedBlob = null) {
   let blob = prefetchedBlob;
   if (!blob) {
-    const imgUrl = `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media&key=${GDRIVE_KEY}`;
-    const imgResp = await fetch(imgUrl);
-    if (!imgResp.ok) return false;
+    // Use server-side proxy to avoid CORS + Drive redirect issues
+    const imgResp = await fetch(`/api/drive-file?fileId=${fileId}`);
+    if (!imgResp.ok) {
+      console.error('Drive download failed:', imgResp.status, await imgResp.text());
+      return false;
+    }
     blob = await imgResp.blob();
   }
   const cropped = await cropImage(blob);
