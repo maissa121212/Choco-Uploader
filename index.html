@@ -618,8 +618,10 @@ ${JSON.stringify(texts)}
     })
   });
   const data = await resp.json();
+  if (!resp.ok) throw new Error('Claude API: ' + (data?.error?.message || resp.status));
   const text = data.content?.[0]?.text?.trim();
-  const clean = text.replace(/\`\`\`json|\`\`\`/g, '').trim();
+  if (!text) throw new Error('Claude вернул пустой ответ');
+  const clean = text.replace(/```json|```/g, '').trim();
   return JSON.parse(clean);
 }
 
@@ -917,7 +919,7 @@ async function loadProducts(menuId) {
 function normalize(s) {
   return s.toLowerCase()
     .replace(/ё/g, 'е')
-    .replace(/\.[^.]+$/, '')   // remove extension
+    .replace(/\s*\.[^.]+$/, '')  // remove extension + leading space before it
     .replace(/[_\-]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
@@ -961,7 +963,7 @@ function findMatch(filename) {
       if (s > bestScore) { bestScore = s; best = p; }
     }
   }
-  if (bestScore >= 0.7) return best;
+  if (bestScore >= 0.6) return best;
 
   return null;
 }
